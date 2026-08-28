@@ -1,59 +1,36 @@
-# Cursor Web App Template
+# Azul
 
-Starter template for static web apps deployed to GitHub Pages with:
+Online multiplayer clone of the board game **Azul**. Create a room, share a 4-letter code, and play with 2–4 friends on your phones.
 
-- React
-- Vite
-- TypeScript
-- ESLint
-- `gh-pages` deployment script
-- GitHub Actions Pages deployment workflow
+Live at [sethhyatt8.github.io/azul](https://sethhyatt8.github.io/azul/).
 
-## Quick start (for a new app)
+## Stack
 
-1. Clone this template repository.
-2. Rename the folder/repository for your app.
-3. Install dependencies:
+- React + Vite + TypeScript
+- Firebase Realtime Database (REST) for live rooms under `azul/{code}`
+- GitHub Pages deploy on push to `main`
+
+## Run locally
 
 ```bash
 npm install
-```
-
-4. Start development:
-
-```bash
+cp .env.example .env
 npm run dev
 ```
 
-## Deploy to GitHub Pages
+Rooms use the same Firebase project as [Games](https://github.com/sethhyatt8/games) and [Artists](https://github.com/sethhyatt8/artists), under a separate `azul/` path.
 
-This template includes:
+## Scripts
 
-- `predeploy`: `npm run build`
-- `deploy`: `gh-pages -d dist`
+- `npm run dev` — local dev server
+- `npm run test` — game engine tests
+- `npm run build` / `npm run lint`
+- `npm run deploy` — manual GitHub Pages deploy
 
-To deploy:
+## How to play
 
-```bash
-npm run deploy
-```
-
-`vite.config.ts` uses `base: './'` so the built app remains portable for GitHub Pages project hosting.
-
-For automatic deploys, this template also includes `.github/workflows/deploy-pages.yml`, which publishes on pushes to `main`.
-
-## One-time Cursor setup (important)
-
-Repository rules can guide agent behavior, but frequent run-approval prompts are controlled by your Cursor permissions mode.
-
-In Cursor:
-
-1. Open Agent settings and set approval mode to `allowlist` (or a less strict mode you are comfortable with).
-2. Expand your allowlist to include normal dev commands (for example: `npm install`, `npm run *`, `npx vite`, `git status`, `git diff`, `git log`).
-3. Keep destructive commands requiring approval (for example: `rm -rf`, `git reset --hard`, force pushes).
-
-After this one-time setup, cloned repos using this template should run with far fewer interruptions.
-
-## Template intent
-
-This repo is intentionally minimal and cloneable so you can quickly start new apps (for example, a darts scoring app) while keeping consistent tooling and agent behavior defaults.
+1. **Create room** or **join** with a code.
+2. Host starts when at least 2 players have joined.
+3. On your turn, tap a color in a factory or the center pool.
+4. Tiles fill your pattern lines, then move to your wall at round end.
+5. Game ends when someone completes a horizontal row on their wall.

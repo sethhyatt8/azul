@@ -1,4 +1,7 @@
-const databaseURL = (import.meta.env.VITE_FIREBASE_DATABASE_URL ?? '').replace(/\/$/, '')
+const databaseURL = (
+  import.meta.env.VITE_FIREBASE_DATABASE_URL ??
+  'https://artists-c1291-default-rtdb.firebaseio.com'
+).replace(/\/$/, '')
 
 export function isFirebaseConfigured() {
   return databaseURL.length > 0

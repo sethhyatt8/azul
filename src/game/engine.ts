@@ -400,7 +400,7 @@ export function resolveRound(state: GameState): GameState {
   const lastRoundScoring: Record<string, number> = {}
   const boards: Record<string, PlayerBoard> = {}
   let triggerEnd = false
-  let lid = [...state.lid]
+  const lid = [...state.lid]
   const markerHolder = state.playerOrder.find((id) => state.boards[id].hasStartingMarker) ?? null
   const nextStartingPlayerId = markerHolder ?? state.startingPlayerId
 

@@ -63,6 +63,7 @@ describe('azul engine', () => {
     expect('error' in next).toBe(false)
     if ('error' in next) return
     const remainder = state.factories[factoryIndex].filter((tile) => tile !== color)
+    expect(next.factories[factoryIndex]).toEqual([])
     expect(next.center).toEqual(remainder)
   })
 

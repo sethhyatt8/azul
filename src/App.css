@@ -284,46 +284,47 @@ button.tile.faded {
 }
 
 .board-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(5, var(--tile-slot)) var(--board-gap) repeat(5, var(--tile-slot));
+  column-gap: 4px;
   align-items: center;
-  gap: 8px;
+  min-height: var(--tile-slot);
 }
 
-.board-row.selectable .pattern-line {
+.board-row-gap {
+  grid-column: 6;
+  width: var(--board-gap);
+}
+
+.board-row.selectable .pattern-line-hit {
   cursor: pointer;
-}
-
-.board-row.selectable {
-  border-radius: 10px;
   box-shadow: inset 0 0 0 1px var(--accent);
   background: var(--accent-dim);
+  border-radius: 8px;
 }
 
 .board-row.dimmed {
   opacity: 0.45;
 }
 
-.pattern-line-slots {
+.pattern-line-hit {
+  grid-column: 1 / 6;
   display: grid;
   grid-template-columns: repeat(5, var(--tile-slot));
   gap: 4px;
-}
-
-.pattern-spacer {
-  width: var(--tile-slot);
-  height: var(--tile-slot);
-}
-
-.pattern-line {
-  display: block;
   padding: 0;
   border: 0;
   background: transparent;
   cursor: default;
 }
 
-.pattern-line:disabled {
+.pattern-line-hit:disabled {
   cursor: default;
+}
+
+.pattern-spacer {
+  width: var(--tile-slot);
+  height: var(--tile-slot);
 }
 
 .center-pool h3 {
@@ -395,6 +396,7 @@ button.tile:hover {
   border-radius: 16px;
   background: var(--bg-raise);
   --tile-slot: 26px;
+  --board-gap: 10px;
 }
 
 .player-board.compact {
@@ -425,12 +427,6 @@ button.tile:hover {
   border-radius: 6px;
   display: grid;
   place-items: center;
-}
-
-.wall-row {
-  display: grid;
-  grid-template-columns: repeat(5, var(--tile-slot));
-  gap: 4px;
 }
 
 .wall-cell {

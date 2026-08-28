@@ -241,7 +241,7 @@ export function applyDraft(
     if (!factory) return { error: 'Factory not found.' }
     const result = takeFromFactory(factory, move.color)
     taken = result.taken
-    factories[index] = result.remainder
+    factories[index] = []
     center = [...center, ...result.remainder]
   } else {
     taken = center.filter((tile) => tile === move.color)

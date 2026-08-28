@@ -39,37 +39,39 @@ export function PlayerBoardView({
             >
               <button
                 type="button"
-                className="pattern-line"
+                className="pattern-line-hit"
                 disabled={!canPick}
                 onClick={() => onSelectLine?.(row)}
               >
-                <div className="pattern-line-slots">
-                  {Array.from({ length: 5 }, (_, col) => {
-                    if (col < slotOffset) {
-                      return <span key={col} className="pattern-spacer" aria-hidden="true" />
-                    }
-                    const slot = col - slotOffset
-                    return (
-                      <span key={col} className="pattern-slot">
-                        {slot < line.tiles && line.color ? (
-                          <Tile color={line.color} size={tileSize} />
-                        ) : null}
-                      </span>
-                    )
-                  })}
-                </div>
-              </button>
-
-              <div className="wall-row">
-                {board.wall[row].map((filled, colIndex) => {
-                  const color = WALL_PATTERN[row][colIndex]
+                {Array.from({ length: 5 }, (_, col) => {
+                  if (col < slotOffset) {
+                    return <span key={col} className="pattern-spacer" aria-hidden="true" />
+                  }
+                  const slot = col - slotOffset
                   return (
-                    <span key={colIndex} className={`wall-cell${filled ? ' filled' : ' ghost'}`}>
-                      <Tile color={color} size={tileSize} faded={!filled} />
+                    <span key={col} className="pattern-slot">
+                      {slot < line.tiles && line.color ? (
+                        <Tile color={line.color} size={tileSize} />
+                      ) : null}
                     </span>
                   )
                 })}
-              </div>
+              </button>
+
+              <span className="board-row-gap" aria-hidden="true" />
+
+              {board.wall[row].map((filled, colIndex) => {
+                const color = WALL_PATTERN[row][colIndex]
+                return (
+                  <span
+                    key={colIndex}
+                    className={`wall-cell${filled ? ' filled' : ' ghost'}`}
+                    style={{ gridColumn: colIndex + 7 }}
+                  >
+                    <Tile color={color} size={tileSize} faded={!filled} />
+                  </span>
+                )
+              })}
             </div>
           )
         })}

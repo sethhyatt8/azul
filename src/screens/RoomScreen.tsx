@@ -138,13 +138,6 @@ export function RoomScreen({ state, error, onSend, onLeave }: RoomScreenProps) {
           ? -1
           : null
 
-  const clearedFactoryIndex =
-    activeDraftStep.kind !== 'pick-source' &&
-    activeDraftStep.source === 'factory' &&
-    activeDraftStep.factoryIndex !== undefined
-      ? activeDraftStep.factoryIndex
-      : null
-
   return (
     <section className="screen room">
       <header className="room-header">
@@ -260,7 +253,6 @@ export function RoomScreen({ state, error, onSend, onLeave }: RoomScreenProps) {
             centerHasStartingMarker={game.centerHasStartingMarker}
             interactive={state.isMyTurn && activeDraftStep.kind === 'pick-source'}
             selectedFactoryIndex={selectedFactoryIndex}
-            clearedFactoryIndex={clearedFactoryIndex}
             onSelectFactory={selectFactory}
             onSelectCenter={selectCenter}
           />

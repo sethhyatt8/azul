@@ -46,8 +46,9 @@ export function emptyBoard(): PlayerBoard {
 }
 
 export function factoryCount(playerCount: number) {
-  if (playerCount <= 3) return 5
-  return 7
+  if (playerCount <= 2) return 5
+  if (playerCount === 3) return 7
+  return 9
 }
 
 export function refillFactories(state: GameState): GameState {

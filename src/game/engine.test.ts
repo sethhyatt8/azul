@@ -32,6 +32,11 @@ describe('azul engine', () => {
     expect(state.playerOrder).toHaveLength(2)
   })
 
+  it('uses 7 factory pads for 3 players and 9 for 4', () => {
+    expect(startGame(['a', 'b', 'c']).factories.length).toBe(7)
+    expect(startGame(['a', 'b', 'c', 'd']).factories.length).toBe(9)
+  })
+
   it('allows drafting from a factory', () => {
     const state = startGame(['a', 'b'])
     const { playerId, move } = firstMove(state)

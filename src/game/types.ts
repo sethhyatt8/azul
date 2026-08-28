@@ -33,6 +33,7 @@ export type GameState = {
   startingPlayerId: string
   round: number
   bag: TileColor[]
+  lid: TileColor[]
   factories: Factory[]
   center: TileColor[]
   centerHasStartingMarker: boolean

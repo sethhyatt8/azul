@@ -125,6 +125,9 @@ export function normalizeGameState(raw: unknown): GameState | null {
     bag: asArray<unknown>(raw.bag)
       .map(sanitizeColor)
       .filter((color): color is TileColor => color !== null),
+    lid: asArray<unknown>(raw.lid)
+      .map(sanitizeColor)
+      .filter((color): color is TileColor => color !== null),
     factories: normalizeFactories(raw.factories),
     center: asArray<unknown>(raw.center)
       .map(sanitizeColor)

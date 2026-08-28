@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   applyDraft,
+  refillFactories,
   resolveRound,
   startGame,
   validDraftMoves,
@@ -35,6 +36,50 @@ describe('azul engine', () => {
   it('uses 7 factory pads for 3 players and 9 for 4', () => {
     expect(startGame(['a', 'b', 'c']).factories.length).toBe(7)
     expect(startGame(['a', 'b', 'c', 'd']).factories.length).toBe(9)
+  })
+
+  it('starts with 100 tiles in the bag', () => {
+    const state = startGame(['a', 'b'])
+    const onBoard = state.factories.flat().length
+    expect(state.bag.length + onBoard).toBe(100)
+    expect(state.lid).toEqual([])
+  })
+
+  it('recycles discarded tiles from the lid when the bag is empty', () => {
+    const state = startGame(['a', 'b', 'c', 'd'])
+    const drawn = state.factories.flat().length
+    const next = refillFactories({
+      ...state,
+      bag: [],
+      lid: Array.from({ length: 36 }, () => 'blue' as TileColor),
+      factories: [],
+      center: [],
+    })
+    expect(next.factories.flat().length).toBe(36)
+    expect(next.lid.length).toBe(0)
+    expect(next.bag.length + next.factories.flat().length).toBe(36)
+    expect(drawn).toBeGreaterThan(0)
+  })
+
+  it('returns floor tiles to the lid at round end', () => {
+    let state = startGame(['a', 'b'])
+    const playerId = state.playerOrder[0]
+    state = {
+      ...state,
+      boards: {
+        ...state.boards,
+        [playerId]: {
+          ...state.boards[playerId],
+          floorLine: ['red', 'blue'],
+        },
+      },
+      factories: state.factories.map(() => []),
+      center: [],
+    }
+
+    const next = resolveRound(state)
+    expect(next.lid).toEqual(expect.arrayContaining(['red', 'blue']))
+    expect(next.boards[playerId].floorLine).toEqual([])
   })
 
   it('allows drafting from a factory', () => {

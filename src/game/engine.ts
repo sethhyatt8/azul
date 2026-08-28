@@ -51,21 +51,44 @@ export function factoryCount(playerCount: number) {
   return 9
 }
 
+function pourLidIntoBag(bag: TileColor[], lid: TileColor[]) {
+  if (bag.length > 0 || lid.length === 0) return { bag, lid }
+  return { bag: shuffle(lid), lid: [] as TileColor[] }
+}
+
+function drawTile(bag: TileColor[], lid: TileColor[]) {
+  let nextBag = bag
+  let nextLid = lid
+  if (nextBag.length === 0) {
+    const poured = pourLidIntoBag(nextBag, nextLid)
+    nextBag = poured.bag
+    nextLid = poured.lid
+  }
+  if (nextBag.length === 0) return { tile: null, bag: nextBag, lid: nextLid }
+  const tile = nextBag[nextBag.length - 1]
+  return { tile, bag: nextBag.slice(0, -1), lid: nextLid }
+}
+
 export function refillFactories(state: GameState): GameState {
   const count = factoryCount(state.playerOrder.length)
-  const bag = [...state.bag]
+  let bag = [...state.bag]
+  let lid = [...state.lid]
   const factories: Factory[] = []
   for (let i = 0; i < count; i += 1) {
     const tiles: TileColor[] = []
     for (let t = 0; t < 4; t += 1) {
-      if (bag.length === 0) break
-      tiles.push(bag.pop()!)
+      const drawn = drawTile(bag, lid)
+      bag = drawn.bag
+      lid = drawn.lid
+      if (!drawn.tile) break
+      tiles.push(drawn.tile)
     }
     factories.push(tiles)
   }
   return {
     ...state,
     bag,
+    lid,
     factories,
     center: [],
   }
@@ -81,6 +104,7 @@ export function startGame(playerIds: string[]): GameState {
     startingPlayerId: playerOrder[0],
     round: 1,
     bag: createBag(),
+    lid: [],
     factories: [],
     center: [],
     centerHasStartingMarker: true,
@@ -149,8 +173,7 @@ function takeFromFactory(factory: Factory, color: TileColor) {
 }
 
 function addToFloor(board: PlayerBoard, tiles: TileColor[]) {
-  const floor = [...board.floorLine, ...tiles]
-  return { ...board, floorLine: floor.slice(0, 7) }
+  return { ...board, floorLine: [...board.floorLine, ...tiles] }
 }
 
 function placeOnPatternLine(board: PlayerBoard, lineIndex: number, color: TileColor, count: number) {
@@ -313,7 +336,7 @@ function resolveLine(board: PlayerBoard, lineIndex: number) {
   const line = board.patternLines[lineIndex]
   const capacity = lineCapacity(lineIndex)
   if (line.tiles < capacity || !line.color) {
-    return { board, gained: 0 }
+    return { board, gained: 0, discarded: [] as TileColor[] }
   }
   const col = wallColumnForColor(lineIndex, line.color)
   const wall = board.wall.map((row) => [...row])
@@ -322,19 +345,23 @@ function resolveLine(board: PlayerBoard, lineIndex: number) {
   const patternLines = board.patternLines.map((item, index) =>
     index === lineIndex ? { color: null, tiles: 0 } : item,
   )
+  const discarded = Array.from({ length: capacity - 1 }, () => line.color!)
   return {
     board: { ...board, wall, patternLines },
     gained,
+    discarded,
   }
 }
 
 function resolveBoard(board: PlayerBoard) {
   let next: PlayerBoard = { ...board, floorLine: [], hasStartingMarker: false }
   let gained = 0
+  const discarded: TileColor[] = [...board.floorLine]
   for (let lineIndex = 0; lineIndex < 5; lineIndex += 1) {
     const result = resolveLine(next, lineIndex)
     next = result.board
     gained += result.gained
+    discarded.push(...result.discarded)
   }
   const penalty = floorPenalty(board.floorLine.length)
   if (board.hasStartingMarker) {
@@ -343,7 +370,7 @@ function resolveBoard(board: PlayerBoard) {
   }
   gained += penalty
   next = { ...next, score: Math.max(0, next.score + gained) }
-  return { board: next, gained }
+  return { board: next, gained, discarded }
 }
 
 function completedRowCount(wall: boolean[][]) {
@@ -373,6 +400,7 @@ export function resolveRound(state: GameState): GameState {
   const lastRoundScoring: Record<string, number> = {}
   const boards: Record<string, PlayerBoard> = {}
   let triggerEnd = false
+  let lid = [...state.lid]
   const markerHolder = state.playerOrder.find((id) => state.boards[id].hasStartingMarker) ?? null
   const nextStartingPlayerId = markerHolder ?? state.startingPlayerId
 
@@ -380,6 +408,7 @@ export function resolveRound(state: GameState): GameState {
     const result = resolveBoard(state.boards[playerId])
     boards[playerId] = result.board
     lastRoundScoring[playerId] = result.gained
+    lid.push(...result.discarded)
     if (completedRowCount(result.board.wall) > 0) triggerEnd = true
   }
 
@@ -405,6 +434,7 @@ export function resolveRound(state: GameState): GameState {
       ...state,
       phase: 'gameOver',
       boards: finalBoards,
+      lid,
       lastRoundScoring: lastRoundWithBonus,
       roundScoringHistory: [...state.roundScoringHistory, lastRoundScoring],
       endGameBonuses: endGameBonusByPlayer,
@@ -419,6 +449,7 @@ export function resolveRound(state: GameState): GameState {
   const next = refillFactories({
     ...state,
     boards,
+    lid,
     lastRoundScoring,
     roundScoringHistory: [...state.roundScoringHistory, lastRoundScoring],
     round: state.round + 1,

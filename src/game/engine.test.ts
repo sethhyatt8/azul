@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   applyDraft,
+  resolveRound,
   startGame,
   validDraftMoves,
   validPlacementLines,
@@ -78,5 +79,54 @@ describe('azul engine', () => {
       lineIndex: null,
     })
     expect(result).toEqual({ error: 'Choose a pattern line for these tiles.' })
+  })
+
+  it('gives the starting marker when first to take from center each round', () => {
+    const state = startGame(['a', 'b'])
+    const playerId = state.playerOrder[state.currentPlayerIndex]
+    const color = state.factories[0][0] as TileColor
+    const afterFactory = applyDraft(state, playerId, {
+      source: 'factory',
+      factoryIndex: 0,
+      color,
+      lineIndex: validPlacementLines(state.boards[playerId], color)[0] ?? null,
+    })
+    expect('error' in afterFactory).toBe(false)
+    if ('error' in afterFactory) return
+    expect(afterFactory.center.length).toBeGreaterThan(0)
+
+    const centerColor = afterFactory.center[0] as TileColor
+    const nextPlayer = afterFactory.playerOrder[afterFactory.currentPlayerIndex]
+    const afterCenter = applyDraft(afterFactory, nextPlayer, {
+      source: 'center',
+      color: centerColor,
+      lineIndex: validPlacementLines(afterFactory.boards[nextPlayer], centerColor)[0] ?? null,
+    })
+    expect('error' in afterCenter).toBe(false)
+    if ('error' in afterCenter) return
+    expect(afterCenter.boards[nextPlayer].hasStartingMarker).toBe(true)
+    expect(afterCenter.centerHasStartingMarker).toBe(false)
+    expect(afterCenter.startingPlayerId).toBe(nextPlayer)
+  })
+
+  it('returns marker to center and rotates first player after each round', () => {
+    let state = startGame(['a', 'b', 'c'])
+    const markerHolder = state.playerOrder[1]
+    state = {
+      ...state,
+      centerHasStartingMarker: false,
+      startingPlayerId: markerHolder,
+      boards: {
+        ...state.boards,
+        [markerHolder]: { ...state.boards[markerHolder], hasStartingMarker: true },
+      },
+      factories: state.factories.map(() => []),
+      center: [],
+    }
+
+    const next = resolveRound(state)
+    expect(next.centerHasStartingMarker).toBe(true)
+    expect(next.playerOrder[next.currentPlayerIndex]).toBe(markerHolder)
+    expect(next.boards[markerHolder].hasStartingMarker).toBe(false)
   })
 })

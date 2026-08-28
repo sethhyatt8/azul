@@ -46,7 +46,7 @@ export function FactoryDisplay({
         <h3>Center</h3>
         {centerHasStartingMarker ? (
           <p className="hint center-marker-hint">
-            First player to take from the center also gets the <strong>1</strong> marker (−1 point).
+            First player to take from the center this round also gets the <strong>1</strong> marker (−1 point at round end).
           </p>
         ) : null}
         <button

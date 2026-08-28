@@ -416,7 +416,7 @@ export function resolveRound(state: GameState): GameState {
     round: state.round + 1,
     startingPlayerId: nextStartingPlayerId,
     currentPlayerIndex: starterIndex >= 0 ? starterIndex : 0,
-    centerHasStartingMarker: markerHolder === null && state.centerHasStartingMarker,
+    centerHasStartingMarker: true,
     phase: 'drafting',
   })
 

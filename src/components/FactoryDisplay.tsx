@@ -8,6 +8,7 @@ type FactoryDisplayProps = {
   centerHasStartingMarker: boolean
   interactive: boolean
   selectedFactoryIndex: number | null
+  clearedFactoryIndex?: number | null
   onSelectFactory?: (factoryIndex: number) => void
   onSelectCenter?: () => void
 }
@@ -18,6 +19,7 @@ export function FactoryDisplay({
   centerHasStartingMarker,
   interactive,
   selectedFactoryIndex,
+  clearedFactoryIndex = null,
   onSelectFactory,
   onSelectCenter,
 }: FactoryDisplayProps) {
@@ -25,21 +27,24 @@ export function FactoryDisplay({
     <div className="factory-area">
       <p className="hint">Tap a factory or the center, then choose a color and pattern line.</p>
       <div className="factory-grid">
-        {factories.map((factory, index) => (
+        {factories.map((factory, index) => {
+          const isCleared = clearedFactoryIndex === index
+          const isEmpty = factory.length === 0 || isCleared
+          return (
           <button
             key={index}
             type="button"
-            className={`factory${selectedFactoryIndex === index ? ' selected' : ''}`}
-            disabled={!interactive || factory.length === 0}
+            className={`factory${selectedFactoryIndex === index ? ' selected' : ''}${isCleared ? ' cleared' : ''}`}
+            disabled={!interactive || isEmpty}
             onClick={() => onSelectFactory?.(index)}
           >
-            {factory.length === 0 ? (
-              <span className="factory-empty">Empty</span>
+            {isEmpty ? (
+              <span className="factory-empty">{isCleared ? 'Selected' : 'Empty'}</span>
             ) : (
               factory.map((color, tileIndex) => <Tile key={`${index}-${tileIndex}`} color={color} />)
             )}
           </button>
-        ))}
+        )})}
       </div>
 
       <div className="center-pool">

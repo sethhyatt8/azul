@@ -19,6 +19,7 @@ export function PlayerBoardView({
   onSelectLine,
 }: PlayerBoardViewProps) {
   const picking = Boolean(onSelectLine && selectableLines)
+  const tileSize = compact ? 22 : 26
 
   return (
     <div className={`player-board${compact ? ' compact' : ''}${highlight ? ' highlight' : ''}`}>
@@ -27,45 +28,51 @@ export function PlayerBoardView({
         <span className="score">{board.score} pts</span>
       </div>
 
-      <div className="board-grid">
-        <div className="pattern-lines">
-          {board.patternLines.map((line, row) => {
-            const canPick = selectableLines?.includes(row)
-            return (
+      <div className="board-rows">
+        {board.patternLines.map((line, row) => {
+          const canPick = selectableLines?.includes(row)
+          const slotOffset = 5 - (row + 1)
+          return (
+            <div
+              key={row}
+              className={`board-row${canPick ? ' selectable' : ''}${picking && !canPick ? ' dimmed' : ''}`}
+            >
               <button
-                key={row}
                 type="button"
-                className={`pattern-line${canPick ? ' selectable' : ''}${picking && !canPick ? ' dimmed' : ''}`}
+                className="pattern-line"
                 disabled={!canPick}
                 onClick={() => onSelectLine?.(row)}
               >
-                {Array.from({ length: row + 1 }, (_, slot) => (
-                  <span key={slot} className="pattern-slot">
-                    {slot < line.tiles && line.color ? (
-                      <Tile color={line.color} size={compact ? 20 : 24} />
-                    ) : null}
-                  </span>
-                ))}
-                {canPick ? <span className="line-pick-label">Place here</span> : null}
+                <div className="pattern-line-slots">
+                  {Array.from({ length: 5 }, (_, col) => {
+                    if (col < slotOffset) {
+                      return <span key={col} className="pattern-spacer" aria-hidden="true" />
+                    }
+                    const slot = col - slotOffset
+                    return (
+                      <span key={col} className="pattern-slot">
+                        {slot < line.tiles && line.color ? (
+                          <Tile color={line.color} size={tileSize} />
+                        ) : null}
+                      </span>
+                    )
+                  })}
+                </div>
               </button>
-            )
-          })}
-        </div>
 
-        <div className="wall">
-          {board.wall.map((row, rowIndex) => (
-            <div key={rowIndex} className="wall-row">
-              {row.map((filled, colIndex) => {
-                const color = WALL_PATTERN[rowIndex][colIndex]
-                return (
-                  <span key={colIndex} className={`wall-cell${filled ? ' filled' : ' ghost'}`}>
-                    <Tile color={color} size={compact ? 18 : 22} faded={!filled} />
-                  </span>
-                )
-              })}
+              <div className="wall-row">
+                {board.wall[row].map((filled, colIndex) => {
+                  const color = WALL_PATTERN[row][colIndex]
+                  return (
+                    <span key={colIndex} className={`wall-cell${filled ? ' filled' : ' ghost'}`}>
+                      <Tile color={color} size={tileSize} faded={!filled} />
+                    </span>
+                  )
+                })}
+              </div>
             </div>
-          ))}
-        </div>
+          )
+        })}
       </div>
 
       <div className="floor-line">

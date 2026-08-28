@@ -128,5 +128,7 @@ describe('azul engine', () => {
     expect(next.centerHasStartingMarker).toBe(true)
     expect(next.playerOrder[next.currentPlayerIndex]).toBe(markerHolder)
     expect(next.boards[markerHolder].hasStartingMarker).toBe(false)
+    expect(next.roundScoringHistory).toHaveLength(1)
+    expect(next.roundScoringHistory[0]).toHaveProperty(markerHolder)
   })
 })

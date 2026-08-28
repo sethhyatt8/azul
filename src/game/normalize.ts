@@ -94,6 +94,27 @@ export function normalizeGameState(raw: unknown): GameState | null {
       )
     : undefined
 
+  const roundScoringHistory = asArray<unknown>(raw.roundScoringHistory)
+    .map((roundRaw) => {
+      if (!isRecord(roundRaw)) return null
+      const gains = Object.fromEntries(
+        Object.entries(roundRaw).filter(
+          (entry): entry is [string, number] => typeof entry[1] === 'number',
+        ),
+      )
+      return Object.keys(gains).length > 0 ? gains : null
+    })
+    .filter((round): round is Record<string, number> => round !== null)
+
+  const endGameBonuses =
+    isRecord(raw.endGameBonuses) ?
+      Object.fromEntries(
+        Object.entries(raw.endGameBonuses).filter(
+          (entry): entry is [string, number] => typeof entry[1] === 'number',
+        ),
+      )
+    : undefined
+
   return {
     phase: raw.phase,
     playerOrder,
@@ -111,6 +132,8 @@ export function normalizeGameState(raw: unknown): GameState | null {
     centerHasStartingMarker: raw.centerHasStartingMarker !== false,
     boards,
     lastRoundScoring,
+    roundScoringHistory,
+    endGameBonuses,
     winnerIds: asArray<unknown>(raw.winnerIds).filter(
       (id): id is string => typeof id === 'string',
     ),

@@ -38,5 +38,7 @@ export type GameState = {
   centerHasStartingMarker: boolean
   boards: Record<string, PlayerBoard>
   lastRoundScoring?: Record<string, number>
+  roundScoringHistory: Record<string, number>[]
+  endGameBonuses?: Record<string, number>
   winnerIds: string[]
 }

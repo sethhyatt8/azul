@@ -85,6 +85,7 @@ export function startGame(playerIds: string[]): GameState {
     centerHasStartingMarker: true,
     boards,
     winnerIds: [],
+    roundScoringHistory: [],
   }
   return refillFactories(base)
 }
@@ -383,13 +384,16 @@ export function resolveRound(state: GameState): GameState {
 
   if (triggerEnd) {
     const finalBoards: Record<string, PlayerBoard> = {}
+    const endGameBonusByPlayer: Record<string, number> = {}
+    const lastRoundWithBonus = { ...lastRoundScoring }
     for (const playerId of state.playerOrder) {
       const bonus = endGameBonuses(boards[playerId])
+      endGameBonusByPlayer[playerId] = bonus
       finalBoards[playerId] = {
         ...boards[playerId],
         score: boards[playerId].score + bonus,
       }
-      lastRoundScoring[playerId] += bonus
+      lastRoundWithBonus[playerId] += bonus
     }
     const ranked = [...state.playerOrder].sort(
       (a, b) => finalBoards[b].score - finalBoards[a].score,
@@ -400,7 +404,9 @@ export function resolveRound(state: GameState): GameState {
       ...state,
       phase: 'gameOver',
       boards: finalBoards,
-      lastRoundScoring,
+      lastRoundScoring: lastRoundWithBonus,
+      roundScoringHistory: [...state.roundScoringHistory, lastRoundScoring],
+      endGameBonuses: endGameBonusByPlayer,
       winnerIds,
       factories: [],
       center: [],
@@ -413,6 +419,7 @@ export function resolveRound(state: GameState): GameState {
     ...state,
     boards,
     lastRoundScoring,
+    roundScoringHistory: [...state.roundScoringHistory, lastRoundScoring],
     round: state.round + 1,
     startingPlayerId: nextStartingPlayerId,
     currentPlayerIndex: starterIndex >= 0 ? starterIndex : 0,

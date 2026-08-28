@@ -32,6 +32,7 @@ describe('normalizeGameState', () => {
     expect(game).not.toBeNull()
     expect(game?.center).toEqual([])
     expect(game?.winnerIds).toEqual([])
+    expect(game?.roundScoringHistory).toEqual([])
     expect(game?.boards.a.patternLines[0]).toEqual({ color: null, tiles: 0 })
   })
 

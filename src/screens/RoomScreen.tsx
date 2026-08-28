@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { FactoryDisplay } from '../components/FactoryDisplay'
 import { PlayerBoardView } from '../components/PlayerBoard'
+import { ScoreSummary } from '../components/ScoreSummary'
 import { Tile } from '../components/Tile'
 import {
   centerColorOptions,
@@ -289,6 +290,12 @@ export function RoomScreen({ state, error, onSend, onLeave }: RoomScreenProps) {
               ? 'Tie game!'
               : `${playerName(state, game.winnerIds[0])} wins!`}
           </p>
+          <ScoreSummary
+            game={game}
+            playerNames={Object.fromEntries(
+              state.players.map((player) => [player.id, player.name]),
+            )}
+          />
           <ul className="leaderboard">
             {[...state.players]
               .sort((a, b) => (game.boards[b.id]?.score ?? 0) - (game.boards[a.id]?.score ?? 0))

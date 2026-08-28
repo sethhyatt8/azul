@@ -85,12 +85,16 @@ export function normalizeStoredRoom(raw: unknown): StoredRoom | null {
 
 export function toRoomState(room: StoredRoom, selfId: string, roomCode: string): RoomState {
   const hostId = room.createdBy ?? room.hostId
-  const players = Object.values(room.players).sort((a, b) => {
-    if (a.id === hostId) return -1
-    if (b.id === hostId) return 1
-    return a.name.localeCompare(b.name)
-  })
   const game = room.game
+  const activeIds =
+    game && room.phase !== PHASE.lobby ? new Set(game.playerOrder) : null
+  const players = Object.values(room.players)
+    .filter((player) => !activeIds || activeIds.has(player.id))
+    .sort((a, b) => {
+      if (a.id === hostId) return -1
+      if (b.id === hostId) return 1
+      return a.name.localeCompare(b.name)
+    })
   const currentPlayerId =
     game && game.phase === 'drafting'
       ? game.playerOrder[game.currentPlayerIndex] ?? null

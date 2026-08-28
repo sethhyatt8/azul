@@ -40,6 +40,14 @@ export function RoomScreen({ state, error, onSend, onLeave }: RoomScreenProps) {
   const [draftStep, setDraftStep] = useState<DraftStep>({ kind: 'pick-source' })
   const turnToken = `${game?.round ?? 0}-${state.currentPlayerId ?? ''}`
   const [draftTurn, setDraftTurn] = useState('')
+  const inGame = state.phase !== 'lobby'
+  const showTurnFlash = state.isMyTurn && state.phase === 'drafting'
+
+  const boardPlayers = useMemo(() => {
+    const self = state.players.find((player) => player.id === state.selfId)
+    const others = state.players.filter((player) => player.id !== state.selfId)
+    return self ? [self, ...others] : state.players
+  }, [state.players, state.selfId])
 
   const myBoard = game?.boards[state.selfId] ?? emptyBoard()
   const activeDraftStep = useMemo(
@@ -140,10 +148,11 @@ export function RoomScreen({ state, error, onSend, onLeave }: RoomScreenProps) {
           : null
 
   return (
-    <section className="screen room">
-      <header className="room-header">
+    <section className={`screen room${inGame ? ' in-game' : ''}`}>
+      {showTurnFlash ? <div key={turnToken} className="turn-flash-overlay" aria-hidden="true" /> : null}
+      <header className={`room-header${inGame ? ' compact' : ''}`}>
         <div>
-          <p className="eyebrow">Room</p>
+          {!inGame ? <p className="eyebrow">Room</p> : null}
           <p className="room-code">{state.roomCode}</p>
         </div>
         <button type="button" className="btn ghost compact" onClick={onLeave}>
@@ -153,20 +162,18 @@ export function RoomScreen({ state, error, onSend, onLeave }: RoomScreenProps) {
 
       {error ? <p className="error-banner">{error}</p> : null}
 
-      <ul className="player-list">
-        {state.players.map((player) => (
-          <li key={player.id}>
-            <span>{player.name}</span>
-            <span className="player-tags">
-              {player.id === state.hostId ? <span className="tag">Host</span> : null}
-              {state.currentPlayerId === player.id && state.phase === 'drafting' ? (
-                <span className="tag ready">Turn</span>
-              ) : null}
-              {game ? <span className="tag">{game.boards[player.id]?.score ?? 0} pts</span> : null}
-            </span>
-          </li>
-        ))}
-      </ul>
+      {!inGame ? (
+        <ul className="player-list">
+          {state.players.map((player) => (
+            <li key={player.id}>
+              <span>{player.name}</span>
+              <span className="player-tags">
+                {player.id === state.hostId ? <span className="tag">Host</span> : null}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
 
       {state.phase === 'lobby' ? (
         <div className="panel">
@@ -190,11 +197,28 @@ export function RoomScreen({ state, error, onSend, onLeave }: RoomScreenProps) {
 
       {game && state.phase === 'drafting' ? (
         <>
-          <div className="status-bar">
-            <p>
-              Round {game.round} ·{' '}
-              {state.isMyTurn ? <strong>Your turn</strong> : <span>{currentName}&apos;s turn</span>}
-            </p>
+          <div
+            key={showTurnFlash ? turnToken : 'waiting'}
+            className={`status-bar${showTurnFlash ? ' your-turn' : ''}`}
+          >
+            <div className="status-main">
+              <span className="status-round">Round {game.round}</span>
+              {state.isMyTurn ? (
+                <strong className="your-turn-label">Your turn</strong>
+              ) : (
+                <span>{currentName}&apos;s turn</span>
+              )}
+            </div>
+            <div className="player-chips" aria-label="Scores">
+              {state.players.map((player) => (
+                <span
+                  key={player.id}
+                  className={`player-chip${player.id === state.currentPlayerId ? ' active' : ''}${player.id === state.selfId ? ' you' : ''}`}
+                >
+                  {player.name} · {game.boards[player.id]?.score ?? 0}
+                </span>
+              ))}
+            </div>
             {state.isMyTurn ? (
               <p className="hint draft-hint">
                 {activeDraftStep.kind === 'pick-source' && 'Step 1: choose a factory or the center.'}
@@ -259,7 +283,7 @@ export function RoomScreen({ state, error, onSend, onLeave }: RoomScreenProps) {
           />
 
           <div className="boards-stack">
-            {state.players.map((player) => (
+            {boardPlayers.map((player) => (
               <PlayerBoardView
                 key={player.id}
                 name={player.name}

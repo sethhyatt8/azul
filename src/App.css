@@ -5,6 +5,10 @@
   text-align: left;
 }
 
+.screen.room.in-game {
+  gap: 12px;
+}
+
 .eyebrow {
   margin: 0;
   font-size: 13px;
@@ -155,6 +159,15 @@
   background: var(--accent-dim);
 }
 
+.screen.room.in-game .panel {
+  padding: 12px 14px;
+  gap: 10px;
+}
+
+.screen.room.in-game .factory-area .hint {
+  font-size: 13px;
+}
+
 .error-banner {
   padding: 12px 14px;
   border-radius: 12px;
@@ -163,12 +176,105 @@
   color: #f5caca;
 }
 
+.room-header.compact {
+  margin-bottom: 0;
+}
+
+.room-header.compact .room-code {
+  font-size: 22px;
+  letter-spacing: 0.08em;
+}
+
+.turn-flash-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20;
+  animation: turn-screen-flash 1.4s ease-out;
+}
+
+.status-bar.your-turn {
+  animation: turn-bar-flash 1.4s ease-out;
+  border-color: var(--accent);
+}
+
+.status-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.status-round {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.your-turn-label {
+  color: var(--accent);
+}
+
+.player-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.player-chip {
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.player-chip.you {
+  color: var(--ink);
+}
+
+.player-chip.active {
+  border-color: var(--ready);
+  color: var(--ready);
+}
+
+@keyframes turn-screen-flash {
+  0% {
+    box-shadow: inset 0 0 0 0 rgba(120, 190, 255, 0);
+  }
+  18% {
+    box-shadow: inset 0 0 0 4px rgba(120, 190, 255, 0.9);
+  }
+  100% {
+    box-shadow: inset 0 0 0 0 rgba(120, 190, 255, 0);
+  }
+}
+
+@keyframes turn-bar-flash {
+  0% {
+    background: var(--bg-raise);
+  }
+  18% {
+    background: rgba(120, 190, 255, 0.18);
+  }
+  100% {
+    background: var(--bg-raise);
+  }
+}
+
 .status-bar {
-  padding: 10px 14px;
+  padding: 8px 12px;
   border-radius: 12px;
   background: var(--bg-raise);
   border: 1px solid var(--line);
   color: var(--ink);
+}
+
+.status-bar .draft-hint {
+  margin: 8px 0 0;
 }
 
 .factory-area {

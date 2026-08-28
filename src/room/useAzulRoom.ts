@@ -6,7 +6,6 @@ import {
   emptyRoom,
   normalizeStoredRoom,
   playerCount,
-  playerRecord,
   toFirebaseRoom,
   toRoomState,
   type RoomState,
@@ -22,12 +21,12 @@ export type RoomSession = {
 
 const RTDB_ROOT = 'azul'
 
-function tabId() {
-  const key = 'azul-tab-id'
-  const existing = sessionStorage.getItem(key)
+function playerIdForRoom(roomCode: string) {
+  const key = `azul-player-${roomCode}`
+  const existing = localStorage.getItem(key)
   if (existing) return existing
   const id = crypto.randomUUID()
-  sessionStorage.setItem(key, id)
+  localStorage.setItem(key, id)
   return id
 }
 
@@ -39,8 +38,9 @@ export function useAzulRoom(session: RoomSession) {
   const [status, setStatus] = useState<'connecting' | 'open' | 'closed'>(() =>
     isFirebaseConfigured() ? 'connecting' : 'closed',
   )
-  const selfId = useRef(tabId())
+  const selfId = useRef(playerIdForRoom(session.roomCode))
   const latestState = useRef<RoomState | null>(null)
+  const phaseRef = useRef<StoredRoom['phase']>('lobby')
 
   useEffect(() => {
     if (!isFirebaseConfigured()) return
@@ -54,14 +54,10 @@ export function useAzulRoom(session: RoomSession) {
     const stopListen = rtdbListen(path, (data) => {
       const room = normalizeStoredRoom(data)
       if (!room) return
-      const visible = room.players[id]
-        ? room
-        : ({
-            ...room,
-            players: { ...room.players, [id]: playerRecord(id, name) },
-          } satisfies StoredRoom)
-      setError(visible.errorMessage)
-      latestState.current = toRoomState(visible, id, code)
+      phaseRef.current = room.phase
+      if (!room.players[id]) return
+      setError(room.errorMessage)
+      latestState.current = toRoomState(room, id, code)
       setState(latestState.current)
     })
 
@@ -81,9 +77,12 @@ export function useAzulRoom(session: RoomSession) {
       .then((result) => {
         if (stopped) return
         if (!result.committed) {
+          const room = normalizeStoredRoom(result.snapshot)
           setError(
             session.intent === 'join'
-              ? 'Room not found. Check the code, or create a room.'
+              ? room && room.phase !== 'lobby'
+                ? 'This game has already started.'
+                : 'Room not found. Check the code, or create a room.'
               : 'This room is full.',
           )
           setStatus('closed')
@@ -105,7 +104,9 @@ export function useAzulRoom(session: RoomSession) {
       stopped = true
       stopListen()
       window.clearInterval(heartbeat)
-      void rtdbSet(`${path}/players/${id}`, null)
+      if (phaseRef.current === 'lobby') {
+        void rtdbSet(`${path}/players/${id}`, null)
+      }
     }
   }, [session.intent, session.name, session.roomCode])
 

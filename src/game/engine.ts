@@ -13,6 +13,7 @@ export type DraftMove = {
   source: 'factory' | 'center'
   factoryIndex?: number
   color: TileColor
+  lineIndex: number | null
 }
 
 export type EngineError = { error: string }
@@ -109,11 +110,34 @@ function canPlaceOnLine(board: PlayerBoard, lineIndex: number, color: TileColor)
   return true
 }
 
-function targetLine(board: PlayerBoard, color: TileColor): number | null {
-  for (let i = 4; i >= 0; i -= 1) {
-    if (canPlaceOnLine(board, i, color)) return i
+export function validPlacementLines(board: PlayerBoard, color: TileColor): number[] {
+  const lines: number[] = []
+  for (let i = 0; i < 5; i += 1) {
+    if (canPlaceOnLine(board, i, color)) lines.push(i)
   }
-  return null
+  return lines
+}
+
+export function factoryColorOptions(factory: Factory): Array<{ color: TileColor; count: number }> {
+  const counts = new Map<TileColor, number>()
+  for (const color of factory) {
+    counts.set(color, (counts.get(color) ?? 0) + 1)
+  }
+  return TILE_COLORS.filter((color) => counts.has(color)).map((color) => ({
+    color,
+    count: counts.get(color)!,
+  }))
+}
+
+export function centerColorOptions(center: TileColor[]): Array<{ color: TileColor; count: number }> {
+  const counts = new Map<TileColor, number>()
+  for (const color of center) {
+    counts.set(color, (counts.get(color) ?? 0) + 1)
+  }
+  return TILE_COLORS.filter((color) => counts.has(color)).map((color) => ({
+    color,
+    count: counts.get(color)!,
+  }))
 }
 
 function takeFromFactory(factory: Factory, color: TileColor) {
@@ -148,17 +172,27 @@ function placeOnPatternLine(board: PlayerBoard, lineIndex: number, color: TileCo
   return next
 }
 
-function distributeTiles(board: PlayerBoard, color: TileColor, count: number) {
-  const lineIndex = targetLine(board, color)
-  if (lineIndex === null) {
-    return addToFloor(board, Array.from({ length: count }, () => color))
+function placeTilesOnBoard(
+  board: PlayerBoard,
+  color: TileColor,
+  count: number,
+  lineIndex: number | null,
+): PlayerBoard | EngineError {
+  const validLines = validPlacementLines(board, color)
+  if (validLines.length > 0) {
+    if (lineIndex === null || !validLines.includes(lineIndex)) {
+      return { error: 'Choose a pattern line for these tiles.' }
+    }
+    return placeOnPatternLine(board, lineIndex, color, count)
   }
-  return placeOnPatternLine(board, lineIndex, color, count)
+  return addToFloor(board, Array.from({ length: count }, () => color))
 }
 
-export function validDraftMoves(state: GameState, playerId: string): DraftMove[] {
+export type DraftPick = Omit<DraftMove, 'lineIndex'>
+
+export function validDraftMoves(state: GameState, playerId: string): DraftPick[] {
   if (state.phase !== 'drafting' || currentPlayerId(state) !== playerId) return []
-  const moves: DraftMove[] = []
+  const moves: DraftPick[] = []
   const seen = new Set<string>()
 
   state.factories.forEach((factory, factoryIndex) => {
@@ -220,7 +254,9 @@ export function applyDraft(
 
   if (taken.length === 0) return { error: 'No tiles of that color.' }
 
-  board = distributeTiles(board, move.color, taken.length)
+  const placed = placeTilesOnBoard(board, move.color, taken.length, move.lineIndex)
+  if ('error' in placed) return placed
+  board = placed
   const boards = { ...state.boards, [playerId]: board }
   const startingPlayerId =
     move.source === 'center' && state.centerHasStartingMarker ? playerId : state.startingPlayerId

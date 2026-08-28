@@ -159,6 +159,7 @@ export function applyMessage(
       source: message.source,
       factoryIndex: message.factoryIndex,
       color,
+      lineIndex: message.lineIndex,
     })
     if ('error' in result) return result
     return {

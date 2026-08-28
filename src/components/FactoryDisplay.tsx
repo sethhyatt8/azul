@@ -7,8 +7,9 @@ type FactoryDisplayProps = {
   center: TileColor[]
   centerHasStartingMarker: boolean
   interactive: boolean
-  onPickFactory?: (factoryIndex: number, color: TileColor) => void
-  onPickCenter?: (color: TileColor) => void
+  selectedFactoryIndex: number | null
+  onSelectFactory?: (factoryIndex: number) => void
+  onSelectCenter?: () => void
 }
 
 export function FactoryDisplay({
@@ -16,49 +17,51 @@ export function FactoryDisplay({
   center,
   centerHasStartingMarker,
   interactive,
-  onPickFactory,
-  onPickCenter,
+  selectedFactoryIndex,
+  onSelectFactory,
+  onSelectCenter,
 }: FactoryDisplayProps) {
   return (
     <div className="factory-area">
+      <p className="hint">Tap a factory or the center, then choose a color and pattern line.</p>
       <div className="factory-grid">
         {factories.map((factory, index) => (
-          <div key={index} className="factory">
+          <button
+            key={index}
+            type="button"
+            className={`factory${selectedFactoryIndex === index ? ' selected' : ''}`}
+            disabled={!interactive || factory.length === 0}
+            onClick={() => onSelectFactory?.(index)}
+          >
             {factory.length === 0 ? (
               <span className="factory-empty">Empty</span>
             ) : (
-              factory.map((color, tileIndex) => (
-                <Tile
-                  key={`${index}-${tileIndex}`}
-                  color={color}
-                  onClick={
-                    interactive && onPickFactory
-                      ? () => onPickFactory(index, color)
-                      : undefined
-                  }
-                />
-              ))
+              factory.map((color, tileIndex) => <Tile key={`${index}-${tileIndex}`} color={color} />)
             )}
-          </div>
+          </button>
         ))}
       </div>
 
       <div className="center-pool">
         <h3>Center</h3>
-        <div className="center-tiles">
+        {centerHasStartingMarker ? (
+          <p className="hint center-marker-hint">
+            First player to take from the center also gets the <strong>1</strong> marker (−1 point).
+          </p>
+        ) : null}
+        <button
+          type="button"
+          className={`center-tiles center-select${selectedFactoryIndex === -1 ? ' selected' : ''}`}
+          disabled={!interactive || (center.length === 0 && !centerHasStartingMarker)}
+          onClick={() => onSelectCenter?.()}
+        >
           {centerHasStartingMarker ? <StartingMarker /> : null}
           {center.length === 0 && !centerHasStartingMarker ? (
             <span className="factory-empty">Empty</span>
           ) : (
-            center.map((color, index) => (
-              <Tile
-                key={`center-${index}`}
-                color={color}
-                onClick={interactive && onPickCenter ? () => onPickCenter(color) : undefined}
-              />
-            ))
+            center.map((color, index) => <Tile key={`center-${index}`} color={color} />)
           )}
-        </div>
+        </button>
       </div>
     </div>
   )

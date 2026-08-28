@@ -183,17 +183,133 @@
   gap: 10px;
 }
 
-.factory,
-.center-tiles {
+.tile.faded {
+  opacity: 0.38;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+button.tile.faded {
+  opacity: 0.38;
+}
+
+.factory-area .hint {
+  margin: 0;
+}
+
+.factory {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   align-items: center;
+  justify-content: center;
   min-height: 72px;
   padding: 10px;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--bg-raise);
+  cursor: pointer;
+}
+
+.factory.selected,
+.center-select.selected {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.factory:disabled,
+.center-select:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.center-select {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  width: 100%;
+  min-height: 72px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--bg-raise);
+  cursor: pointer;
+  text-align: left;
+}
+
+.center-marker-hint {
+  margin-bottom: 8px;
+}
+
+.draft-panel {
+  gap: 14px;
+}
+
+.draft-hint {
+  margin-top: 6px;
+}
+
+.color-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.color-choice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg-raise);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.color-choice:hover {
+  border-color: var(--accent);
+}
+
+.pattern-line {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+  min-height: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  width: 100%;
+}
+
+.pattern-line.selectable {
+  padding: 4px 6px;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  background: var(--accent-dim);
+  cursor: pointer;
+}
+
+.pattern-line.dimmed {
+  opacity: 0.45;
+}
+
+.line-pick-label {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-left: 6px;
+}
+
+.wall-cell.ghost {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.wall-cell.filled {
+  background: transparent;
 }
 
 .center-pool h3 {
@@ -294,13 +410,6 @@ button.tile:hover {
   display: flex;
   flex-direction: column;
   gap: 6px;
-}
-
-.pattern-line {
-  display: flex;
-  justify-content: flex-end;
-  gap: 4px;
-  min-height: 28px;
 }
 
 .pattern-slot {

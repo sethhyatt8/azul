@@ -6,9 +6,20 @@ type PlayerBoardViewProps = {
   name: string
   compact?: boolean
   highlight?: boolean
+  selectableLines?: number[]
+  onSelectLine?: (lineIndex: number) => void
 }
 
-export function PlayerBoardView({ board, name, compact, highlight }: PlayerBoardViewProps) {
+export function PlayerBoardView({
+  board,
+  name,
+  compact,
+  highlight,
+  selectableLines,
+  onSelectLine,
+}: PlayerBoardViewProps) {
+  const picking = Boolean(onSelectLine && selectableLines)
+
   return (
     <div className={`player-board${compact ? ' compact' : ''}${highlight ? ' highlight' : ''}`}>
       <div className="player-board-header">
@@ -18,15 +29,27 @@ export function PlayerBoardView({ board, name, compact, highlight }: PlayerBoard
 
       <div className="board-grid">
         <div className="pattern-lines">
-          {board.patternLines.map((line, row) => (
-            <div key={row} className="pattern-line">
-              {Array.from({ length: row + 1 }, (_, slot) => (
-                <span key={slot} className="pattern-slot">
-                  {slot < line.tiles && line.color ? <Tile color={line.color} size={compact ? 20 : 24} /> : null}
-                </span>
-              ))}
-            </div>
-          ))}
+          {board.patternLines.map((line, row) => {
+            const canPick = selectableLines?.includes(row)
+            return (
+              <button
+                key={row}
+                type="button"
+                className={`pattern-line${canPick ? ' selectable' : ''}${picking && !canPick ? ' dimmed' : ''}`}
+                disabled={!canPick}
+                onClick={() => onSelectLine?.(row)}
+              >
+                {Array.from({ length: row + 1 }, (_, slot) => (
+                  <span key={slot} className="pattern-slot">
+                    {slot < line.tiles && line.color ? (
+                      <Tile color={line.color} size={compact ? 20 : 24} />
+                    ) : null}
+                  </span>
+                ))}
+                {canPick ? <span className="line-pick-label">Place here</span> : null}
+              </button>
+            )
+          })}
         </div>
 
         <div className="wall">
@@ -35,8 +58,8 @@ export function PlayerBoardView({ board, name, compact, highlight }: PlayerBoard
               {row.map((filled, colIndex) => {
                 const color = WALL_PATTERN[rowIndex][colIndex]
                 return (
-                  <span key={colIndex} className={`wall-cell${filled ? ' filled' : ''}`}>
-                    {filled ? <Tile color={color} size={compact ? 18 : 22} /> : null}
+                  <span key={colIndex} className={`wall-cell${filled ? ' filled' : ' ghost'}`}>
+                    <Tile color={color} size={compact ? 18 : 22} faded={!filled} />
                   </span>
                 )
               })}

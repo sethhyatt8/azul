@@ -23,7 +23,13 @@ export type Player = {
 
 export type ClientMessage =
   | { type: 'start' }
-  | { type: 'draft'; source: 'factory' | 'center'; factoryIndex?: number; color: string }
+  | {
+      type: 'draft'
+      source: 'factory' | 'center'
+      factoryIndex?: number
+      color: string
+      lineIndex: number | null
+    }
   | { type: 'backToLobby' }
 
 export function sanitizeName(raw: string | null | undefined): string {

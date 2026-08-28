@@ -1,4 +1,5 @@
 import { applyDraft, startGame } from '../game/engine'
+import { normalizeGameState } from '../game/normalize'
 import { TILE_COLORS, type GameState, type TileColor } from '../game/types'
 import {
   GAME_ID,
@@ -77,7 +78,7 @@ export function normalizeStoredRoom(raw: unknown): StoredRoom | null {
           ? raw.hostId
           : null,
     players: normalizePlayers(raw.players),
-    game: normalizeGame(raw.game),
+    game: normalizeGameState(raw.game),
     errorMessage: typeof raw.errorMessage === 'string' ? raw.errorMessage : null,
   }
 }
@@ -218,12 +219,4 @@ function normalizePlayers(raw: unknown): Record<string, Player> {
 
 function sanitizeColor(raw: string): TileColor | null {
   return TILE_COLORS.includes(raw as TileColor) ? (raw as TileColor) : null
-}
-
-function normalizeGame(raw: unknown): GameState | null {
-  if (!isRecord(raw)) return null
-  if (!isPhase(raw.phase)) return null
-  if (!Array.isArray(raw.playerOrder)) return null
-  if (!isRecord(raw.boards)) return null
-  return raw as unknown as GameState
 }

@@ -1,5 +1,6 @@
 import { FactoryDisplay } from '../components/FactoryDisplay'
 import { PlayerBoardView } from '../components/PlayerBoard'
+import { emptyBoard } from '../game/engine'
 import { MIN_PLAYERS } from '../room/protocol'
 import type { RoomState } from '../room/roomLogic'
 import type { ClientMessage } from '../room/protocol'
@@ -89,8 +90,8 @@ export function RoomScreen({ state, error, onSend, onLeave }: RoomScreenProps) {
           </div>
 
           <FactoryDisplay
-            factories={game.factories}
-            center={game.center}
+            factories={game.factories ?? []}
+            center={game.center ?? []}
             centerHasStartingMarker={game.centerHasStartingMarker}
             interactive={state.isMyTurn}
             onPickFactory={pickFactory}
@@ -102,7 +103,7 @@ export function RoomScreen({ state, error, onSend, onLeave }: RoomScreenProps) {
               <PlayerBoardView
                 key={player.id}
                 name={player.name}
-                board={game.boards[player.id]}
+                board={game.boards[player.id] ?? emptyBoard()}
                 compact={player.id !== state.selfId}
                 highlight={player.id === state.selfId}
               />
@@ -115,7 +116,7 @@ export function RoomScreen({ state, error, onSend, onLeave }: RoomScreenProps) {
         <div className="panel finale">
           <h2>Game over</h2>
           <p>
-            {game.winnerIds.length > 1
+            {game.winnerIds?.length > 1
               ? 'Tie game!'
               : `${playerName(state, game.winnerIds[0])} wins!`}
           </p>
